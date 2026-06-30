@@ -30,19 +30,17 @@ def make_token() -> str:
 
 
 @pytest.mark.asyncio
-async def test_save_token_persists_value(fake_redis, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("app.bot.handlers.get_redis", lambda: fake_redis)
+async def test_save_token_persists_value(patch_handlers_redis) -> None:
     message = make_message(f"/token {make_token()}")
 
     await save_token(message)
 
-    assert await fake_redis.get(token_key(101)) is not None
+    assert await patch_handlers_redis.get(token_key(101)) is not None
     message.answer.assert_awaited_once_with("Токен принят и сохранен.")
 
 
 @pytest.mark.asyncio
-async def test_handle_prompt_rejects_missing_token(fake_redis, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("app.bot.handlers.get_redis", lambda: fake_redis)
+async def test_handle_prompt_rejects_missing_token(patch_handlers_redis, monkeypatch: pytest.MonkeyPatch) -> None:
     delay_mock = Mock()
     monkeypatch.setattr("app.bot.handlers.llm_request", SimpleNamespace(delay=delay_mock))
     message = make_message("Привет")
@@ -54,11 +52,13 @@ async def test_handle_prompt_rejects_missing_token(fake_redis, monkeypatch: pyte
 
 
 @pytest.mark.asyncio
-async def test_handle_prompt_enqueues_task_for_valid_token(fake_redis, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("app.bot.handlers.get_redis", lambda: fake_redis)
+async def test_handle_prompt_enqueues_task_for_valid_token(
+    patch_handlers_redis,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     delay_mock = Mock()
     monkeypatch.setattr("app.bot.handlers.llm_request", SimpleNamespace(delay=delay_mock))
-    await fake_redis.set(token_key(101), make_token())
+    await patch_handlers_redis.set(token_key(101), make_token())
     message = make_message("Объясни JWT")
 
     await handle_prompt(message)

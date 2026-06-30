@@ -15,4 +15,3 @@ celery_app.conf.update(
     enable_utc=True,
     imports=("app.tasks.llm_tasks",),
 )
-celery_app.autodiscover_tasks(["app.tasks"])

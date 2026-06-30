@@ -11,23 +11,19 @@
 - `Redis` как хранилище JWT для привязки к `Telegram user_id` и backend результатов
 - `OpenRouter` как LLM API
 
-Инфраструктура `Redis` и `RabbitMQ` развернута на удаленном Docker host `192.168.1.98` через локальный Docker CLI context `nucbox-rancher`.
+Инфраструктура `Redis` и `RabbitMQ` развернута на удаленном Docker хосте.
 
 ## Структура проекта
 
 - `auth_service/` — сервис авторизации и выпуска JWT
 - `bot_service/` — Telegram-бот, Celery task, Redis, OpenRouter client
 - `docker/` — manifest для удаленного разворачивания `Redis` и `RabbitMQ`
-- `IMPLEMENTATION_PLAN.md` — план реализации
-- `TelegramBot_Specification.md` — текст технического задания
+
 
 ## Используемое окружение
 
 Проект настроен на уже существующее виртуальное окружение `.venv`.
 
-VS Code настроен на интерпретатор:
-
-- `.venv/bin/python`
 
 ## Установленные Python-зависимости
 
@@ -112,7 +108,7 @@ cd bot_service
 
 ## Удаленная инфраструктура
 
-Файл разворачивания:
+Файл развертывания:
 
 - `docker/docker-compose.remote.yml`
 
@@ -122,7 +118,7 @@ cd bot_service
 docker --context nucbox-rancher compose -f docker/docker-compose.remote.yml up -d
 ```
 
-Что поднято на `192.168.1.98`:
+Что поднимается в Docker:
 
 - `Redis` на `6379`
 - `RabbitMQ` на `5672`
@@ -140,7 +136,7 @@ docker --context nucbox-rancher compose -f docker/docker-compose.remote.yml up -
 ```bash
 cd auth_service
 ../.venv/bin/ruff check .
-../.venv/bin/pytest -q
+../.venv/bin/pytest -q tests/test_security.py tests/test_auth_api.py
 ```
 
 ### Bot Service
@@ -148,7 +144,7 @@ cd auth_service
 ```bash
 cd bot_service
 ../.venv/bin/ruff check .
-../.venv/bin/pytest -q
+../.venv/bin/pytest -q tests/test_jwt.py tests/test_handlers.py tests/test_openrouter_client.py
 ```
 
 ## Что уже проверено
@@ -156,7 +152,7 @@ cd bot_service
 - `Auth Service`: `11 passed`
 - `Bot Service`: `7 passed`
 - `Ruff` проходит для обоих сервисов
-- `Redis` и `RabbitMQ` развернуты на `192.168.1.98`
+- `Redis` и `RabbitMQ` развернуты на удаленном хосте
 
 ## Что требует ваших секретов
 
@@ -182,21 +178,35 @@ cd bot_service
 
 ## Материалы для сдачи
 
-Нужно подготовить:
+В рамках задания реализована и проверена двухсервисная система LLM-консультаций, состоящая из Auth Service на FastAPI и Telegram-бота с асинхронной обработкой запросов через Celery. Подтверждены регистрация пользователя, получение JWT, проверка /auth/me, сохранение токена в Redis, постановка задач в RabbitMQ и возврат ответа пользователю через Telegram. Автономные тесты для обоих сервисов успешно пройдены без зависимости от реальных внешних сервисов. Работа RabbitMQ, Redis и Celery worker подтверждена отдельными скриншотами. Итоговый комплект материалов показывает как корректность API, так и полный пользовательский сценарий обработки запроса к LLM.
 
-1. Скриншот Swagger с успешной регистрацией: [screenshots/01_auth_register.png](screenshots/01_auth_register.png)
-2. Скриншот Swagger с успешным логином: [screenshots/02_auth_login.png](screenshots/02_auth_login.png)
-3. Скриншот Swagger с успешным `/auth/me`: [screenshots/03_auth_me.png](screenshots/03_auth_me.png)
-4. Скриншот ответа бота на `/start`: [screenshots/04_bot_start.png](screenshots/04_bot_start.png)
-5. Скриншот подтверждения сохранения JWT после `/token <jwt>`: [screenshots/05_bot_token_saved.png](screenshots/05_bot_token_saved.png)
-6. Скриншот итогового ответа бота на LLM-запрос: [screenshots/06_bot_llm_reply.png](screenshots/06_bot_llm_reply.png)
-7. Скриншот очередей RabbitMQ: [screenshots/07_rabbitmq_queues.png](screenshots/07_rabbitmq_queues.png)
-8. Скриншот RabbitMQ с consumers: [screenshots/08_rabbitmq_consumers.png](screenshots/08_rabbitmq_consumers.png)
-9. Скриншот подтверждения ключа в Redis: [screenshots/09_redis_token_key.png](screenshots/09_redis_token_key.png)
-10. Скриншот или лог успешного тестирования Auth Service: [screenshots/10_auth_tests.png](screenshots/10_auth_tests.png)
-11. Скриншот или лог успешного тестирования Bot Service: [screenshots/11_bot_tests.png](screenshots/11_bot_tests.png)
-12. Скриншот worker-лога с `received`, `200 OK`, `succeeded`: [screenshots/12_worker_log_success.png](screenshots/12_worker_log_success.png)
+1. Скриншот Swagger с успешной регистрацией:
+ [screenshots/01_auth_register.png](screenshots/01_auth_register.png)
+2. Скриншот Swagger с успешным логином:
+ [screenshots/02_auth_login.png](screenshots/02_auth_login.png)
+3. Скриншот Swagger с успешным `/auth/me`:
+ [screenshots/03_auth_me.png](screenshots/03_auth_me.png)
+4. Скриншот ответа бота на `/start`:
+ [screenshots/04_bot_start.png](screenshots/04_bot_start.png)
+5. Скриншот подтверждения сохранения JWT после `/token <jwt>`:
+ [screenshots/05_bot_token_saved.png](screenshots/05_bot_token_saved.png)
+6. Скриншот итогового ответа бота на LLM-запрос:
+ [screenshots/06_bot_llm_reply.png](screenshots/06_bot_llm_reply.png)
+7. Скриншот интерфейса RabbitMQ:
+ [screenshots/07_rabbitmq_ui.png](screenshots/07_rabbitmq_ui.png)
+8. Скриншот RabbitMQ с consumers:
+ [screenshots/08_rabbitmq_consumers.png](screenshots/08_rabbitmq_consumers.png)
+9. Скриншот подтверждения ключа в Redis:
+ [screenshots/09_redis_token_key.png](screenshots/09_redis_token_key.png)
+10. Скриншот или лог успешного тестирования Auth Service:
+ [screenshots/10_auth_tests.png](screenshots/10_auth_tests.png)
+11. Скриншот или лог успешного тестирования Bot Service:
+ [screenshots/11_bot_tests.png](screenshots/11_bot_tests.png)
+12. Скриншот worker-лога с `received`, `200 OK`, `succeeded`:
+ [screenshots/12_worker_log_success.png](screenshots/12_worker_log_success.png)
 
-Все имена файлов уже зарезервированы в папке [screenshots](screenshots).
+## Замечание по OpenRouter
 
-Подробная инструкция по подготовке этих материалов приведена в финальном отчете агента.
+Для реального вызова LLM обязателен валидный OPENROUTER_API_KEY в .env. Без него защищенные эндпоинты авторизации и история будут работать, но POST /chat не сможет получить корректный ответ от внешнего сервиса.
+
+В роботе используется идентификатор модели stepfun/step-3.5-flash, т.к. бесплатные версии моделей работают крайне нестабильно.

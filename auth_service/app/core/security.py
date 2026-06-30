@@ -1,21 +1,20 @@
 from datetime import UTC, datetime, timedelta
 
+import bcrypt
 from jose import ExpiredSignatureError, JWTError, jwt
-from passlib.context import CryptContext
 
 from app.core.config import settings
-
-password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def hash_password(password: str) -> str:
     """Хеширует пароль пользователя для безопасного хранения в БД."""
-    return password_context.hash(password)
+    password_bytes = password.encode("utf-8")
+    return bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(password: str, password_hash: str) -> bool:
     """Проверяет соответствие введенного пароля сохраненному хешу."""
-    return password_context.verify(password, password_hash)
+    return bcrypt.checkpw(password.encode("utf-8"), password_hash.encode("utf-8"))
 
 
 def create_access_token(subject: str, role: str, expires_delta: timedelta | None = None) -> str:

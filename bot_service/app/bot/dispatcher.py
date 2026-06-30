@@ -3,6 +3,7 @@ from aiogram.client.default import DefaultBotProperties
 
 from app.bot.handlers import router
 from app.core.config import settings
+from app.infra.redis import close_redis
 
 
 def create_bot() -> Bot:
@@ -16,6 +17,11 @@ def create_dispatcher() -> Dispatcher:
 
 
 async def run_polling() -> None:
+    """Запускает polling Telegram-бота и освобождает ресурсы при остановке."""
     bot = create_bot()
     dispatcher = create_dispatcher()
-    await dispatcher.start_polling(bot)
+    try:
+        await dispatcher.start_polling(bot)
+    finally:
+        await close_redis()
+        await bot.session.close()
