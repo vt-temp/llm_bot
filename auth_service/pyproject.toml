@@ -1,0 +1,27 @@
+[project]
+name = "auth-service"
+version = "0.1.0"
+description = "Auth service: registration and JWT issuing"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiosqlite>=0.20.0",
+    "bcrypt==4.3.0",
+    "fastapi>=0.112.0",
+    "greenlet>=3.3.1",
+    "httpx>=0.27.0",
+    "passlib[bcrypt]>=1.7.4",
+    "pydantic[email]>=2.7.0",
+    "pydantic-settings>=2.3.0",
+    "python-jose[cryptography]>=3.3.0",
+    "python-multipart>=0.0.9",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "respx>=0.21.0",
+    "ruff>=0.14.0",
+    "sqlalchemy>=2.0.30",
+    "uvicorn[standard]>=0.30.0",
+]
+
+[tool.uv]
+dev-dependencies = []
