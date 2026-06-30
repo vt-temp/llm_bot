@@ -5,6 +5,17 @@ build/
 dist/
 wheels/
 *.egg-info
+*.db
 
 # Virtual environments
 .venv
+
+# Local environment files
+.env
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+
+# macOS
+.DS_Store
